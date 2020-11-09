@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HanseCom.WtkControl.CardManager;
+using System;
 using System.CodeDom;
 using System.Collections.Generic;
 using System.Globalization;
@@ -21,6 +22,7 @@ namespace CardTest
         public int SendLen, RecvLen, nBytesRet, reqType, Aprotocol, dwProtocol, cbPciLength;
         public Card.SCARD_READERSTATE RdrState;
         public Card.SCARD_IO_REQUEST pioSendRequest;
+        private CardIo cardIo;
 
         public MainWindow()
         {
@@ -98,51 +100,26 @@ namespace CardTest
 
         private void buttonGetUid_Click(object sender, RoutedEventArgs e)
         {
-            if (connectCard())
+            if (connectCard1())
             {
-                string cardUID = getcardUID();
+                string cardUID = cardIo.getcardUID();
                 textBlockStatus.Text = $"Card-UID: {cardUID}"; //displaying on text block
             }
         }
 
-        public bool connectCard()
+        private bool connectCard1()
         {
-            connActive = true;
-
-            retCode = Card.SCardConnect(hContext, readername, Card.SCARD_SHARE_SHARED,
-                      Card.SCARD_PROTOCOL_T0 | Card.SCARD_PROTOCOL_T1, ref hCard, ref Protocol);
-
-            if (retCode != Card.SCARD_S_SUCCESS)
+            if (cardIo != null)
+                return true;
+            cardIo = new CardIo();
+            if (!cardIo.connectCard())
             {
-                MessageBox.Show(Card.GetScardErrMsg(retCode), "Card not available", MessageBoxButton.OK, MessageBoxImage.Error);
-                connActive = false;
+                textBlockStatus.Text = cardIo.StatusText;
                 return false;
             }
             return true;
         }
 
-        private string getcardUID()//only for mifare 1k cards
-        {
-            string cardUID = "";
-            byte[] receivedUID = new byte[256];
-            Card.SCARD_IO_REQUEST request = new Card.SCARD_IO_REQUEST();
-            request.dwProtocol = Card.SCARD_PROTOCOL_T1;
-            request.cbPciLength = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Card.SCARD_IO_REQUEST));
-            byte[] sendBytes = new byte[] { 0xFF, 0xCA, 0x00, 0x00, 0x00 }; //get UID command      for Mifare cards
-            int outBytes = receivedUID.Length;
-            int status = Card.SCardTransmit(hCard, ref request, ref sendBytes[0], sendBytes.Length, ref request, ref receivedUID[0], ref outBytes);
-
-            if (status != Card.SCARD_S_SUCCESS)
-            {
-                cardUID = "Error";
-            }
-            else
-            {
-                cardUID = BitConverter.ToString(receivedUID.Take(4).ToArray()).Replace("-", string.Empty).ToLower();
-            }
-
-            return cardUID;
-        }
 
         private byte[] Key
         {
@@ -281,7 +258,7 @@ namespace CardTest
         public void verifyCard()
         {
             string value = "";
-            if (connectCard())
+            if (connectCard1())
             {
                 DataRead = readBlock() ?? new byte[0];
                 SetBytes(DataRead, TextFormat.Hex, textBoxHex);
@@ -291,79 +268,25 @@ namespace CardTest
 
         public byte[] readBlock()
         {
-            string tmpStr = "";
-            int indx;
-
-            string status;
-            string sw = "";
-            byte[] retBuff = null;
-            if (authenticateBlock())
-            {
-                ClearBuffers();
-                SendBuff[0] = 0xFF; // CLA 
-                SendBuff[1] = 0xB0;// INS
-                SendBuff[2] = 0x00;// P1
-                SendBuff[3] = Block;// P2 : Block No.
-                SendBuff[4] = 16;// Le
-
-                SendLen = 5;
-                RecvLen = SendBuff[4] + 2;
-
-                retCode = SendAPDUandDisplay(2);
-
-                switch (retCode)
-                {
-                    case -200:
-                        status = "outofrangeexception";
-                        break;
-                    case -202:
-                        status = "BytesNotAcceptable";
-                        break;
-                    case Card.SCARD_S_SUCCESS:
-                        {
-                            status = "OK";
-                            int RecvLen1 = RecvLen - 2;
-                            retBuff = RecvBuff.Take(RecvLen1).ToArray();
-                            var swInt = RecvBuff[RecvLen1] * 0x100+ RecvBuff[RecvLen1 + 1];
-                           
-                            switch(swInt)
-                            {
-                                case 0x9000:
-                                    sw = "Success";
-                                    break;
-                                case 0x6300:
-                                    sw = "Failed";
-                                    break;
-                                case 0x6a81:
-                                    sw = "Not supported";
-                                    break;
-                                default:
-                                    sw = "Unexpected";
-                                    break;
-                            }
-                            break;
-                        }
-                    default:
-                        status = "FailRead";
-                        break;
-                }
-            }
-            else
-            {
-                status = "FailAuthentication";
-            }
-            textBlockStatus.Text = status;
-            textBlockSubStatus.Text = sw;
-            return retBuff;
+            var bytes = cardIo.ReadCardBlock(Block, KeyType, KeySlot);
+            textBlockStatus.Text = cardIo.StatusText;
+            textBlockSubStatus.Text = cardIo.SubStatusText;
+            return bytes;
         }
 
         private void buttonWrite_Click(object sender, RoutedEventArgs e)
         {
-            if (connectCard())// establish connection to the card: you've declared this from previous post
+            if (connectCard1())// establish connection to the card: you've declared this from previous post
             {
                 writeBlock();
-                Close();
             }
+        }
+
+        private void writeBlock()
+        {
+            cardIo.WriteCardBlock(Data, Block,KeyType,KeySlot);
+            textBlockStatus.Text = cardIo.StatusText;
+            textBlockSubStatus.Text = cardIo.SubStatusText;
         }
 
         private void buttonStoreKey_Click(object sender, RoutedEventArgs e)
@@ -376,44 +299,11 @@ namespace CardTest
             var k = Key;
             if (k == null)
                 return;
-            ClearBuffers();
-            SendBuff[0] = 0xFF;                             // CLA
-            SendBuff[1] = 0x82;                             // INS
-            SendBuff[2] = 0x00;                             // P1: Key Structure - to memory
-            SendBuff[3] = KeySlot;                          // P2: Key slot number
-            SendBuff[4] = 0x06;                             // Lc: Data length
-            k.CopyTo(SendBuff, 5);
-
-            SendLen = SendBuff[4] + 5;
-            RecvLen = 2;
-
-            retCode = SendAPDUandDisplay(2);
-
-            switch (retCode)
-            {
-                case Card.SCARD_S_SUCCESS:
-                    textBlockStatus.Text = "OK";
-                    var swInt = RecvBuff[0] * 0x100 + RecvBuff[1];
-                    string sw;
-                    switch (swInt)
-                    {
-                        case 0x9000:
-                            sw = "";
-                            break;
-                        case 0x6300:
-                            sw = "Operation failed";
-                            break;
-                        default:
-                            sw = "Failed to load key";
-                            break;
-                    }
-                    textBlockSubStatus.Text = sw;
-                    break;
-                default:
-                    textBlockStatus.Text = "Error";
-                    break;
-            }
+            cardIo.StoreKey(k, KeySlot);
+            textBlockStatus.Text = cardIo.StatusText;
+            textBlockSubStatus.Text = cardIo.SubStatusText;
         }
+
 
         private void toggleHex_Click(object sender, RoutedEventArgs e)
         {
@@ -465,6 +355,24 @@ namespace CardTest
 
         }
 
+        private void buttonGetDeviceStatus_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void buttonGetReaderState_Click(object sender, RoutedEventArgs e)
+        {
+            //cardIo.
+        }
+
+        private void toggleKeySlot1_Click(object sender, RoutedEventArgs e)
+        {
+            toggleKeySlot1.Content =
+                toggleKeySlot1.IsChecked == true
+                ? "Key Slot 1"
+                : "Key Slot 0";
+        }
+
         private void buttonCopy_Click(object sender, RoutedEventArgs e)
         {
             Data = DataRead;
@@ -475,96 +383,6 @@ namespace CardTest
 
         }
 
-        //submit data method
-        public void writeBlock()
-        {
-
-            int indx;
-            string status;
-            string sw = "";
-            var data = Data;
-            if (data == null)
-                return;
-            if (authenticateBlock())
-            {
-                ClearBuffers();
-                SendBuff[0] = 0xFF;                             // Class
-                SendBuff[1] = 0xD6;                             // INS
-                SendBuff[2] = 0x00;                             // P1
-                SendBuff[3] = Block;           // P2 : Starting Block No.
-                SendBuff[4] = 16;            // P3 : Data length
-                    
-                data.CopyTo(SendBuff, 5);
-
-                SendLen = SendBuff[4] + 5;
-                RecvLen = 0x02;
-
-                retCode = SendAPDUandDisplay(2);
-
-                if (retCode == Card.SCARD_S_SUCCESS)
-                {
-                    status = "OK";
-                    var swInt = RecvBuff[0] * 0x100 + RecvBuff[1];
-                    switch (swInt)
-                    {
-                        case 0x9000:
-                            sw = "Success";
-                            break;
-                        case 0x6300:
-                            sw = "Failed";
-                            break;
-                        case 0x6a81:
-                            sw = "Not supported";
-                            break;
-                        default:
-                            sw = "Unexpected";
-                            break;
-                    }
-                }
-                else
-                {
-                    sw = "fail write";
-
-                }
-                status = "OK";
-            }
-            else
-            {
-                status = "FailAuthentication";
-            }
-            textBlockStatus.Text = status;
-            textBlockSubStatus.Text = sw;
-        }
-
-        // block authentication
-        private bool authenticateBlock()
-        {
-            ClearBuffers();
-            SendBuff[0] = 0xFF;        // CLA
-            SendBuff[1] = 0x86;        // INS: Authentication
-            SendBuff[2] = 0x00;        // P1 
-            SendBuff[3] = 0x00;        // P2: Memory location;  P2: for stored key input
-            SendBuff[4] = 0x05;        // Lc
-                                       // Authenticate Data Bytes
-            SendBuff[5] = 0x01;        // Byte 1: Version
-            SendBuff[6] = 0x00;        // Byte 2
-            SendBuff[7] = Block;       // Byte 3: Block number
-            SendBuff[8] = KeyType;     // Byte 4: Key type
-            SendBuff[9] = KeySlot;     // Byte 5: Key number
-
-            SendLen = 10;
-            RecvLen = 2;
-
-            retCode = SendAPDUandDisplay(0);
-
-            if (retCode != Card.SCARD_S_SUCCESS)
-            {
-                //MessageBox.Show("FAIL Authentication!");
-                return false;
-            }
-
-            return true;
-        }
 
         // clear memory buffers
         private void ClearBuffers()
