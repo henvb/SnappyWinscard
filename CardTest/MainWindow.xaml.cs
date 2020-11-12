@@ -1,9 +1,8 @@
 ﻿using HanseCom.WtkControl.CardManager;
 using System;
-using System.CodeDom;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -11,12 +10,7 @@ namespace CardTest
 {
     public partial class MainWindow : Window
     {
-        int retCode;
-        int hCard;
-        int hContext;
-        int Protocol;
         public bool connActive = false;
-        string readername = "ACS ACR122 0";      // change depending on reader
         public byte[] SendBuff = new byte[263];
         public byte[] RecvBuff = new byte[263];
         public int SendLen, RecvLen, nBytesRet, reqType, Aprotocol, dwProtocol, cbPciLength;
@@ -27,75 +21,6 @@ namespace CardTest
         public MainWindow()
         {
             InitializeComponent();
-            SelectDevice();
-            establishContext();
-        }
-
-        public void SelectDevice()
-        {
-            List<string> availableReaders = this.ListReaders();
-            this.RdrState = new Card.SCARD_READERSTATE();
-            readername = availableReaders[0].ToString();//selecting first device
-            this.RdrState.RdrName = readername;
-        }
-
-        public List<string> ListReaders()
-        {
-            int ReaderCount = 0;
-            List<string> AvailableReaderList = new List<string>();
-
-            //Make sure a context has been established before 
-            //retrieving the list of smartcard readers.
-            retCode = Card.SCardListReaders(hContext, null, null, ref ReaderCount);
-            if (retCode != Card.SCARD_S_SUCCESS)
-            {
-                MessageBox.Show(Card.GetScardErrMsg(retCode));
-                //connActive = false;
-            }
-
-            byte[] ReadersList = new byte[ReaderCount];
-
-            //Get the list of reader present again but this time add sReaderGroup, retData as 2rd & 3rd parameter respectively.
-            retCode = Card.SCardListReaders(hContext, null, ReadersList, ref ReaderCount);
-            if (retCode != Card.SCARD_S_SUCCESS)
-            {
-                MessageBox.Show(Card.GetScardErrMsg(retCode));
-            }
-
-            string rName = "";
-            int indx = 0;
-            if (ReaderCount > 0)
-            {
-                // Convert reader buffer to string
-                while (ReadersList[indx] != 0)
-                {
-
-                    while (ReadersList[indx] != 0)
-                    {
-                        rName = rName + (char)ReadersList[indx];
-                        indx = indx + 1;
-                    }
-
-                    //Add reader name to list
-                    AvailableReaderList.Add(rName);
-                    rName = "";
-                    indx = indx + 1;
-
-                }
-            }
-            return AvailableReaderList;
-
-        }
-
-        internal void establishContext()
-        {
-            retCode = Card.SCardEstablishContext(Card.SCARD_SCOPE_SYSTEM, 0, 0, ref hContext);
-            if (retCode != Card.SCARD_S_SUCCESS)
-            {
-                MessageBox.Show("Check your device and please restart again", "Reader not connected", MessageBoxButton.OK, MessageBoxImage.Warning);
-                connActive = false;
-                return;
-            }
         }
 
         private void buttonGetUid_Click(object sender, RoutedEventArgs e)
@@ -109,12 +34,21 @@ namespace CardTest
 
         private bool connectCard1()
         {
-            if (cardIo != null)
-                return true;
-            cardIo = new CardIo();
+            if (cardIo == null)
+            {
+                cardIo = new CardIo();
+                cardIo.ReaderStateChanged += CardIo_ReaderStateChanged;
+            }
             if (!cardIo.connectCard())
             {
-                textBlockStatus.Text = cardIo.StatusText;
+                if (Dispatcher.CheckAccess())
+                {
+                    textBlockStatus.Text = cardIo.StatusText;
+                }
+                else
+                {
+                    Dispatcher.Invoke(() => textBlockStatus.Text = cardIo.StatusText);
+                }
                 return false;
             }
             return true;
@@ -355,14 +289,28 @@ namespace CardTest
 
         }
 
-        private void buttonGetDeviceStatus_Click(object sender, RoutedEventArgs e)
+        private async void buttonGetReaderState_Click(object sender, RoutedEventArgs e)
         {
-
+            buttonGetReaderState.Content = "⌛";
+            buttonGetReaderState.InvalidateVisual();
+            await Task.Run(() => GetReaderStatus());
+            buttonGetReaderState.Content = "Query Status";
         }
 
-        private void buttonGetReaderState_Click(object sender, RoutedEventArgs e)
+        private void GetReaderStatus()
         {
-            //cardIo.
+            connectCard1();
+            cardIo.HandleCardStatus();
+        }
+
+        private void CardIo_ReaderStateChanged(CardIo.ReaderState readerState)
+        {
+            if (!Dispatcher.CheckAccess())
+            {
+                Dispatcher.Invoke(() => CardIo_ReaderStateChanged(readerState));
+                return;
+            }
+            textBlockReaderState.Text = readerState.ToString();
         }
 
         private void toggleKeySlot1_Click(object sender, RoutedEventArgs e)
@@ -383,100 +331,13 @@ namespace CardTest
 
         }
 
-
-        // clear memory buffers
-        private void ClearBuffers()
-        {
-            long indx;
-
-            for (indx = 0; indx <= 262; indx++)
-            {
-                RecvBuff[indx] = 0;
-                SendBuff[indx] = 0;
-            }
-        }
-
-        // send application protocol data unit : communication unit between a smart card reader and a smart card
-        private int SendAPDUandDisplay(int reqType)
-        {
-            int indx;
-            string tmpStr = "";
-
-            pioSendRequest.dwProtocol = Aprotocol;
-            pioSendRequest.cbPciLength = 8;
-
-            retCode = Card.SCardTransmit(hCard, ref pioSendRequest, ref SendBuff[0],
-                                 SendLen, ref pioSendRequest, ref RecvBuff[0], ref RecvLen);
-
-            if (retCode != Card.SCARD_S_SUCCESS)
-            {
-                return retCode;
-            }
-
-            else
-            {
-                try
-                {
-                    tmpStr = "";
-                    switch (reqType)
-                    {
-                        case 0:
-                            for (indx = (RecvLen - 2); indx <= (RecvLen - 1); indx++)
-                            {
-                                tmpStr = tmpStr + " " + string.Format("{0:X2}", RecvBuff[indx]);
-                            }
-
-                            if ((tmpStr).Trim() != "90 00")
-                            {
-                                //MessageBox.Show("Return bytes are not acceptable.");
-                                return -202;
-                            }
-
-                            break;
-
-                        case 1:
-
-                            for (indx = (RecvLen - 2); indx <= (RecvLen - 1); indx++)
-                            {
-                                tmpStr = tmpStr + string.Format("{0:X2}", RecvBuff[indx]);
-                            }
-
-                            if (tmpStr.Trim() != "90 00")
-                            {
-                                tmpStr = tmpStr + " " + string.Format("{0:X2}", RecvBuff[indx]);
-                            }
-
-                            else
-                            {
-                                tmpStr = "ATR : ";
-                                for (indx = 0; indx <= (RecvLen - 3); indx++)
-                                {
-                                    tmpStr = tmpStr + " " + string.Format("{0:X2}", RecvBuff[indx]);
-                                }
-                            }
-
-                            break;
-
-                        case 2:
-
-                            break;
-                    }
-                }
-                catch (IndexOutOfRangeException)
-                {
-                    return -200;
-                }
-            }
-            return retCode;
-        }
-
         //disconnect card reader connection
         public void Close()
         {
-            if (connActive)
-            {
-                retCode = Card.SCardDisconnect(hCard, Card.SCARD_UNPOWER_CARD);
-            }
+            //if (connActive)
+            //{
+            //    retCode = Card.SCardDisconnect(hCard, Card.SCARD_UNPOWER_CARD);
+            //}
             //retCode = Card.SCardReleaseContext(hCard);
         }
 
