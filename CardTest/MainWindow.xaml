@@ -4,52 +4,90 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:CardTest"
+        xmlns:cm="clr-namespace:HanseCom.WtkControl.CardManager;assembly=CardManager"
         mc:Ignorable="d"
-        Title="Card Tester" Height="534" Width="482">
-    <Window.Resources>
-        <Style x:Key="FocusVisual">
-            <Setter Property="Control.Template">
-                <Setter.Value>
-                    <ControlTemplate>
-                        <Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <SolidColorBrush x:Key="Button.Static.Background" Color="#FFF1EFEF"/>
-        <SolidColorBrush x:Key="Button.Static.Border" Color="#FF707070"/>
-        <SolidColorBrush x:Key="Button.MouseOver.Background" Color="#FFBEE6FD"/>
-        <SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1"/>
-        <SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6"/>
-        <SolidColorBrush x:Key="Button.Pressed.Border" Color="#FF2C628B"/>
-        <SolidColorBrush x:Key="Button.Disabled.Background" Color="#FFF4F4F4"/>
-        <SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
-        <SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
-        <Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
-            <Setter Property="Background" Value="{StaticResource Button.Static.Background}"/>
-        </Style>
-    </Window.Resources>
-    <Grid>
-        <Button x:Name="buttonGetUid" Content="Connect and Get card UID" HorizontalAlignment="Left" Margin="201,124,0,0" VerticalAlignment="Top" Width="155" Click="buttonGetUid_Click"/>
-        <Button x:Name="buttonWrite" Content="Write data to the card" HorizontalAlignment="Left" Margin="201,361,0,0" VerticalAlignment="Top" Width="155" Click="buttonWrite_Click"/>
-        <Button x:Name="buttonRead" Content="Read data from the card" HorizontalAlignment="Left" Margin="201,241,0,0" VerticalAlignment="Top" Width="155" Click="buttonRead_Click"/>
-        <TextBox x:Name="textBoxHex" HorizontalAlignment="Left" Margin="20,35,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="160" Height="36" FontFamily="Consolas"/>
-        <TextBox x:Name="textBoxKey" HorizontalAlignment="Left" Margin="20,161,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" FontFamily="Consolas"/>
-        <TextBox x:Name="textBoxBlock" HorizontalAlignment="Left" Height="21" Margin="83,240,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="46"/>
-        <TextBlock x:Name="textBlockStatus" HorizontalAlignment="Left" Margin="201,32,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="39" Width="250"/>
-        <TextBlock HorizontalAlignment="Left" Margin="201,10,0,0" TextWrapping="Wrap" Text="Status" VerticalAlignment="Top"/>
-        <TextBox x:Name="textBoxText" HorizontalAlignment="Left" Margin="20,76,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="160" Height="35" FontFamily="Consolas"/>
-        <TextBlock x:Name="textBlockSubStatus" HorizontalAlignment="Left" Margin="201,76,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="35" Width="250"/>
-        <Button x:Name="buttonStoreKey" Content="Store Key" HorizontalAlignment="Left" Margin="201,161,0,0" VerticalAlignment="Top" Width="155" Click="buttonStoreKey_Click"/>
-        <TextBlock HorizontalAlignment="Left" Margin="20,240,0,0" TextWrapping="Wrap" Text="Block No" VerticalAlignment="Top"/>
-        <ToggleButton x:Name="toggleKeySlot1" Content="Key Slot 0" HorizontalAlignment="Left" Margin="20,309,0,0" VerticalAlignment="Top" Width="61" Checked="toggleKeySlot1_Click" Click="toggleKeySlot1_Click"/>
-        <ToggleButton x:Name="toggleKeyTypeB" Content="Key Type A" HorizontalAlignment="Left" Margin="20,284,0,0" VerticalAlignment="Top" Click="toggleKeyTypeB_Click" Background="#FFF5F0F0"/>
-        <TextBox x:Name="textBoxData" HorizontalAlignment="Left" Height="auto" Margin="20,353,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="160" FontFamily="Consolas" TextChanged="textBoxData_TextChanged"/>
-        <ToggleButton x:Name="toggleHexData" Content="Hex" HorizontalAlignment="Left" Margin="20,401,0,0" VerticalAlignment="Top" Click="toggleHex_Click"/>
-        <ToggleButton x:Name="toggleHexKey" Content="Hex" HorizontalAlignment="Left" Margin="20,204,0,0" VerticalAlignment="Top" Click="toggleHex_Click"/>
-        <Button x:Name="buttonCopy" Content="↓" HorizontalAlignment="Left" Margin="54,124,0,0" VerticalAlignment="Top" Width="20" Click="buttonCopy_Click"/>
-		<TextBlock x:Name="textBlockReaderState" HorizontalAlignment="Left" Margin="30,462,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Width="75"/>
-		<Button x:Name="buttonGetReaderState" Content="Button" HorizontalAlignment="Left" Margin="201,463,0,0" VerticalAlignment="Top" Width="155" Click="buttonGetReaderState_Click"/>
-
+        Title="Card Tester" SizeToContent="WidthAndHeight" ResizeMode="NoResize"
+		d:DataContext="{d:DesignInstance cm:CardIo}"
+		>
+	<Window.Resources>
+		<Style x:Key="FocusVisual">
+			<Setter Property="Control.Template">
+				<Setter.Value>
+					<ControlTemplate>
+						<Rectangle Margin="2" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+		<SolidColorBrush x:Key="Button.Static.Background" Color="#FFF1EFEF"/>
+		<SolidColorBrush x:Key="Button.Static.Border" Color="#FF707070"/>
+		<SolidColorBrush x:Key="Button.MouseOver.Background" Color="#FFBEE6FD"/>
+		<SolidColorBrush x:Key="Button.MouseOver.Border" Color="#FF3C7FB1"/>
+		<SolidColorBrush x:Key="Button.Pressed.Background" Color="#FFC4E5F6"/>
+		<SolidColorBrush x:Key="Button.Pressed.Border" Color="#FF2C628B"/>
+		<SolidColorBrush x:Key="Button.Disabled.Background" Color="#FFF4F4F4"/>
+		<SolidColorBrush x:Key="Button.Disabled.Border" Color="#FFADB2B5"/>
+		<SolidColorBrush x:Key="Button.Disabled.Foreground" Color="#FF838383"/>
+		<Style TargetType="{x:Type ToggleButton}" BasedOn="{StaticResource {x:Type ToggleButton}}">
+			<Setter Property="Background" Value="{StaticResource Button.Static.Background}"/>
+		</Style>
+	</Window.Resources>
+	<Grid Margin="0,0,0,0">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="40"/>
+			<RowDefinition Height="40"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="Auto"/>
+			<ColumnDefinition Width="160"/>
+			<ColumnDefinition Width="65.333"/>
+		</Grid.ColumnDefinitions>
+		<Button x:Name="buttonGetUid" Content="Get card UID" HorizontalAlignment="Center"  VerticalAlignment="Center" Width="154" Click="buttonGetUid_Click" Margin="6"/>
+		<ComboBox x:Name="comboboxDevice" VerticalAlignment="Center" Grid.Column="1" Margin="5" Grid.ColumnSpan="3" ItemsSource="{Binding Devices}" SelectedItem="{Binding CurrentDevice}" />
+		<TextBlock HorizontalAlignment="Right" Margin="0,5,5,0" Grid.Row="1" TextWrapping="Wrap" Text="Status" VerticalAlignment="Top"/>
+		<Border BorderBrush="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" BorderThickness="1" Margin="5" VerticalAlignment="Top" Height="39" Width="250" Padding="3" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3">
+			<TextBlock x:Name="textBlockStatus" TextWrapping="Wrap" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}"/>
+		</Border>
+		<Border BorderBrush="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" BorderThickness="1" Margin="5" VerticalAlignment="Top" Height="39" Width="250" Padding="3" Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="3">
+			<TextBlock x:Name="textBlockSubStatus" TextWrapping="Wrap" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}"/>
+		</Border>
+		<Button x:Name="buttonRead" Content="Read data from the card" HorizontalAlignment="Center" VerticalAlignment="Center" Width="154" Click="buttonRead_Click" Grid.Row="3" Margin="6,13"/>
+		<TextBox x:Name="textBoxHex" HorizontalAlignment="Left" Margin="0,5" TextWrapping="Wrap" VerticalAlignment="Top" Width="160" Height="36" FontFamily="Consolas" Grid.Row="3" Grid.Column="2"/>
+		<TextBox x:Name="textBoxText" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="160" Height="35" FontFamily="Consolas" Grid.Row="4" Grid.Column="2" Margin="0,5"/>
+		<Button x:Name="buttonCopy" Content="↓" HorizontalAlignment="Center" Margin="5" VerticalAlignment="Top" Width="20" Click="buttonCopy_Click" RenderTransformOrigin="0.5,2.6" Grid.Row="5" Grid.Column="2"/>
+		<Button x:Name="buttonWrite" Content="Write data to the card" HorizontalAlignment="Center" Margin="6,10" VerticalAlignment="Center" Width="154" Click="buttonWrite_Click" Grid.Row="6"/>
+		<ToggleButton x:Name="toggleHexData" Content="Hex" HorizontalAlignment="Left" VerticalAlignment="Center" Click="toggleHex_Click" RenderTransformOrigin="0.583,-6.7" Grid.Row="6" Grid.Column="1" Margin="5"/>
+		<TextBox x:Name="textBoxData" HorizontalAlignment="Left" Height="auto" TextWrapping="Wrap" VerticalAlignment="Center" Width="160" FontFamily="Consolas" TextChanged="textBoxData_TextChanged" RenderTransformOrigin="0.519,-4.688" Grid.Row="6" Grid.Column="2" />
+		<Button x:Name="buttonStoreKey" Content="Store Key" HorizontalAlignment="Center" Margin="6,10" VerticalAlignment="Center" Width="154" Click="buttonStoreKey_Click" Grid.Column="0" Grid.Row="7"/>
+		<ToggleButton x:Name="toggleHexKey" Content="Hex" HorizontalAlignment="Left" VerticalAlignment="Center" Click="toggleHex_Click" RenderTransformOrigin="0.833,2.35" Grid.Row="7" Grid.Column="1" Margin="5"/>
+		<TextBox x:Name="textBoxKey" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="120" FontFamily="Consolas" Grid.Row="7" Grid.Column="2" Margin="0,12"/>
+		<StatusBar Height="30" VerticalAlignment="Bottom" Width="Auto" HorizontalAlignment="Stretch" Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="4" >
+			<StatusBarItem>
+				<TextBlock x:Name="textBlockReaderState" HorizontalAlignment="Left" TextWrapping="Wrap" Text="?" VerticalAlignment="Top" Width="Auto" MinWidth="70"/>
+			</StatusBarItem>
+			<Separator/>
+			<StatusBarItem>
+				<ToggleButton x:Name="toggleKeySlot1" Content="Key Slot 0" HorizontalAlignment="Right" Margin="6,0" VerticalAlignment="Top" MinWidth="65" Checked="toggleKeySlot1_Click" Click="toggleKeySlot1_Click" Grid.Row="8"/>
+			</StatusBarItem>
+			<StatusBarItem>
+				<ToggleButton x:Name="toggleKeyTypeB" Content="Key Type A" HorizontalAlignment="Left" Margin="6,0" VerticalAlignment="Top" MinWidth="65"  Click="toggleKeyTypeB_Click" Background="#FFF5F0F0"/>
+			</StatusBarItem>
+			<Separator/>
+			<StatusBarItem>
+				<TextBlock HorizontalAlignment="Left" TextWrapping="Wrap" Text="Block No" VerticalAlignment="Center" Width="54"/>
+			</StatusBarItem>
+			<StatusBarItem>
+				<TextBox x:Name="textBoxBlock" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="46" Height="21"/>
+			</StatusBarItem>
+			<StatusBarItem></StatusBarItem>
+		</StatusBar>
 	</Grid>
 </Window>

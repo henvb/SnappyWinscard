@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace CardTest
 {
@@ -14,46 +15,56 @@ namespace CardTest
         public byte[] SendBuff = new byte[263];
         public byte[] RecvBuff = new byte[263];
         public int SendLen, RecvLen, nBytesRet, reqType, Aprotocol, dwProtocol, cbPciLength;
-        public Card.SCARD_READERSTATE RdrState;
-        public Card.SCARD_IO_REQUEST pioSendRequest;
-        private CardIo cardIo;
+        public Winscard.SCARD_READERSTATE RdrState;
+        public Winscard.SCARD_IO_REQUEST pioSendRequest;
+        private object lock1 = new object();
 
         public MainWindow()
         {
             InitializeComponent();
+            CardIo = new CardIo();
+            this.DataContext = CardIo;
+            BindingOperations.EnableCollectionSynchronization(CardIo.Devices, lock1);
+            CardIo.ReaderStateChanged += CardIo_ReaderStateChanged;
+            connectCard1();
         }
+
+        public CardIo CardIo { get; set; }
 
         private void buttonGetUid_Click(object sender, RoutedEventArgs e)
         {
-            if (connectCard1())
+            //if (connectCard1())
+            //{
+            string cardUID = CardIo.GetCardUID();
+            if (cardUID == null)
             {
-                string cardUID = cardIo.getcardUID();
-                textBlockStatus.Text = $"Card-UID: {cardUID}"; //displaying on text block
+                DisplayStatus();
             }
+            else
+            {
+                DisplayStatus($"Card-UID: {cardUID}"); //displaying on text block
+            }
+            //}
         }
 
         private bool connectCard1()
         {
-            if (cardIo == null)
-            {
-                cardIo = new CardIo();
-                cardIo.ReaderStateChanged += CardIo_ReaderStateChanged;
-            }
-            if (!cardIo.connectCard())
+            if (!CardIo.ConnectCard())
             {
                 if (Dispatcher.CheckAccess())
                 {
-                    textBlockStatus.Text = cardIo.StatusText;
+                    textBlockStatus.Text = CardIo.StatusText;
                 }
                 else
                 {
-                    Dispatcher.Invoke(() => textBlockStatus.Text = cardIo.StatusText);
+                    Dispatcher.Invoke(() => textBlockStatus.Text = CardIo.StatusText);
                 }
                 return false;
             }
             return true;
         }
 
+        private enum TextFormat { Hex, Normal, Stretched }
 
         private byte[] Key
         {
@@ -92,29 +103,16 @@ namespace CardTest
             }
         }
 
-        private enum TextFormat { Hex, Normal, Stretched }
 
-        private void SetBytes(byte[] bytes, TextFormat textFormat, TextBox textBox)
-        {
-            textBox.Text = bytes.Aggregate(
-                "",
-                (s, b) =>
-              {
-                  switch (textFormat)
-                  {
-                      case TextFormat.Hex:
-                          return $"{s}{b:X2} ";
-                      case TextFormat.Stretched:
-                          return $"{s}{(char)b}  ";
-                      case TextFormat.Normal:
-                          return $"{s}{(char)b}";
-                  }
-                  throw new ArgumentException();
-              });
-        }
 
         public byte[] DataRead { get ; set; }
-
+        public byte[] readBlock()
+        {
+            var bytes = CardIo.ReadCardBlock(Block, KeyType, KeySlot);
+            textBlockStatus.Text = CardIo.StatusText;
+            textBlockSubStatus.Text = CardIo.SubStatusText;
+            return bytes;
+        }
         private byte[] GetBytes(bool isChecked, TextBox textBox, int length)
         {
             textBlockStatus.Text = "";
@@ -176,6 +174,25 @@ namespace CardTest
                     .ToArray();
             }
         }
+        private void SetBytes(byte[] bytes, TextFormat textFormat, TextBox textBox)
+        {
+            textBox.Text = bytes.Aggregate(
+                "",
+                (s, b) =>
+              {
+                  switch (textFormat)
+                  {
+                      case TextFormat.Hex:
+                          return $"{s}{b:X2} ";
+                      case TextFormat.Stretched:
+                          return $"{s}{(char)b}  ";
+                      case TextFormat.Normal:
+                          return $"{s}{(char)b}";
+                  }
+                  throw new ArgumentException();
+              });
+        }
+
 
         private void buttonRead_Click(object sender, RoutedEventArgs e)
         {
@@ -200,13 +217,6 @@ namespace CardTest
             }
         }
 
-        public byte[] readBlock()
-        {
-            var bytes = cardIo.ReadCardBlock(Block, KeyType, KeySlot);
-            textBlockStatus.Text = cardIo.StatusText;
-            textBlockSubStatus.Text = cardIo.SubStatusText;
-            return bytes;
-        }
 
         private void buttonWrite_Click(object sender, RoutedEventArgs e)
         {
@@ -218,9 +228,19 @@ namespace CardTest
 
         private void writeBlock()
         {
-            cardIo.WriteCardBlock(Data, Block,KeyType,KeySlot);
-            textBlockStatus.Text = cardIo.StatusText;
-            textBlockSubStatus.Text = cardIo.SubStatusText;
+            CardIo.WriteCardBlock(Data, Block, KeyType, KeySlot);
+            DisplayStatus();
+        }
+
+        private void DisplayStatus(string statusText = null, string subStatusText = null)
+        {
+            textBlockStatus.Text = statusText ?? CardIo.StatusText;
+            textBlockSubStatus.Text =
+                subStatusText != null
+                    ? subStatusText
+                    : statusText == null
+                        ? CardIo.SubStatusText
+                        : "";
         }
 
         private void buttonStoreKey_Click(object sender, RoutedEventArgs e)
@@ -233,9 +253,9 @@ namespace CardTest
             var k = Key;
             if (k == null)
                 return;
-            cardIo.StoreKey(k, KeySlot);
-            textBlockStatus.Text = cardIo.StatusText;
-            textBlockSubStatus.Text = cardIo.SubStatusText;
+            CardIo.StoreKey(k, KeySlot);
+            textBlockStatus.Text = CardIo.StatusText;
+            textBlockSubStatus.Text = CardIo.SubStatusText;
         }
 
 
@@ -287,20 +307,6 @@ namespace CardTest
         private void textBoxData_TextChanged(object sender, TextChangedEventArgs e)
         {
 
-        }
-
-        private async void buttonGetReaderState_Click(object sender, RoutedEventArgs e)
-        {
-            buttonGetReaderState.Content = "⌛";
-            buttonGetReaderState.InvalidateVisual();
-            await Task.Run(() => GetReaderStatus());
-            buttonGetReaderState.Content = "Query Status";
-        }
-
-        private void GetReaderStatus()
-        {
-            connectCard1();
-            cardIo.HandleCardStatus();
         }
 
         private void CardIo_ReaderStateChanged(CardIo.ReaderState readerState)
