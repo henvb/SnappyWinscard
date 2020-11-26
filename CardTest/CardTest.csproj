@@ -95,9 +95,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\WtkControl\WtkControl\CardManager\CardManager.csproj">
-      <Project>{8740056f-3e29-4a06-af40-43ec0669e48e}</Project>
-      <Name>CardManager</Name>
+    <ProjectReference Include="..\SnappyCard\SnappyCard.csproj">
+      <Project>{5381eff0-b033-4adf-b1ed-664acc4cf98e}</Project>
+      <Name>SnappyCard</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

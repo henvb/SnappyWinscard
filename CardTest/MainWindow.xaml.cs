@@ -1,8 +1,7 @@
-﻿using HanseCom.WtkControl.CardManager;
+﻿using SnappyCard;
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
@@ -33,8 +32,6 @@ namespace CardTest
 
         private void buttonGetUid_Click(object sender, RoutedEventArgs e)
         {
-            //if (connectCard1())
-            //{
             string cardUID = CardIo.GetCardUID();
             if (cardUID == null)
             {
@@ -44,7 +41,6 @@ namespace CardTest
             {
                 DisplayStatus($"Card-UID: {cardUID}"); //displaying on text block
             }
-            //}
         }
 
         private bool connectCard1()
@@ -208,7 +204,6 @@ namespace CardTest
 
         public void verifyCard()
         {
-            string value = "";
             if (connectCard1())
             {
                 DataRead = readBlock() ?? new byte[0];
@@ -336,18 +331,5 @@ namespace CardTest
         {
 
         }
-
-        //disconnect card reader connection
-        public void Close()
-        {
-            //if (connActive)
-            //{
-            //    retCode = Card.SCardDisconnect(hCard, Card.SCARD_UNPOWER_CARD);
-            //}
-            //retCode = Card.SCardReleaseContext(hCard);
-        }
-
     }
-
-
 }
