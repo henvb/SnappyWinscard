@@ -12,7 +12,6 @@ namespace SnappyCard
     public class CardIo : INotifyPropertyChanged
     {
         int CurrentState;
-        private bool connActive;
         private uint retCode;
         private int swInt;
         const int SwOk = 0x9000;
@@ -67,15 +66,14 @@ namespace SnappyCard
 
                 while (ReadersList[indx] != 0)
                 {
-                    rName = rName + (char)ReadersList[indx];
-                    indx = indx + 1;
+                    rName += (char)ReadersList[indx];
+                    indx += 1;
                 }
 
                 //Add reader name to list
                 availableReaderList.Add(rName);
                 rName = "";
-                indx = indx + 1;
-
+                indx += 1;
             }
             return availableReaderList;
 
@@ -91,14 +89,12 @@ namespace SnappyCard
             if (retCode != Winscard.SCARD_S_SUCCESS)
             {
                 swInt = SwNoContext;
-                connActive = false;
             }
             else
                 SelectDevice();
         }
         public bool ConnectCard()
         {
-            connActive = true;
 
             retCode = Winscard.SCardConnect(hContext, currentDevice, Winscard.SCARD_SHARE_SHARED,
                       Winscard.SCARD_PROTOCOL_T0 | Winscard.SCARD_PROTOCOL_T1, ref hCard, ref Protocol);
@@ -113,7 +109,6 @@ namespace SnappyCard
                     goto default;
                 default:
                     //MessageBox.Show(StatusText, "Card not available", MessageBoxButton.OK, MessageBoxImage.Error);
-                    connActive = false;
                     return false;
             }
             return true;
@@ -129,9 +124,7 @@ namespace SnappyCard
             if (!devices1.Contains(currentDevice))
             {
                 CurrentDevice =
-                    devices1 == null
-                    ? null
-                    : devices1[0].ToString(); // Select first device
+                    devices1?[0].ToString(); // Select first device
             }
         }
 
@@ -165,9 +158,11 @@ namespace SnappyCard
             {
                 string cardUID = "";
                 byte[] receivedUID = new byte[256];
-                Winscard.SCARD_IO_REQUEST request = new Winscard.SCARD_IO_REQUEST();
-                request.dwProtocol = Winscard.SCARD_PROTOCOL_T1;
-                request.cbPciLength = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Winscard.SCARD_IO_REQUEST));
+                Winscard.SCARD_IO_REQUEST request = new Winscard.SCARD_IO_REQUEST
+                {
+                    dwProtocol = Winscard.SCARD_PROTOCOL_T1,
+                    cbPciLength = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Winscard.SCARD_IO_REQUEST))
+                };
                 byte[] sendBytes = new byte[] { 0xFF, 0xCA, 0x00, 0x00, 0x00 }; //get UID command      for Mifare cards
                 int outBytes = receivedUID.Length;
                 if (SCardTransmit(sendBytes, receivedUID, ref request, ref outBytes))
@@ -195,7 +190,6 @@ namespace SnappyCard
         {
             get
             {
-                string sw;
                 switch (swInt)
                 {
                     case 0x9000:

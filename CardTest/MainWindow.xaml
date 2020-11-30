@@ -49,7 +49,7 @@
 			<ColumnDefinition Width="160"/>
 			<ColumnDefinition Width="65.333"/>
 		</Grid.ColumnDefinitions>
-		<Button x:Name="buttonGetUid" Content="Get card UID" HorizontalAlignment="Center"  VerticalAlignment="Center" Width="154" Click="buttonGetUid_Click" Margin="6"/>
+		<Button x:Name="buttonGetUid" Content="Get card UID" HorizontalAlignment="Center"  VerticalAlignment="Center" Width="154" Click="ButtonGetUid_Click" Margin="6"/>
 		<ComboBox x:Name="comboboxDevice" VerticalAlignment="Center" Grid.Column="1" Margin="5" Grid.ColumnSpan="3" ItemsSource="{Binding Devices}" SelectedItem="{Binding CurrentDevice}" />
 		<TextBlock HorizontalAlignment="Right" Margin="0,5,5,0" Grid.Row="1" TextWrapping="Wrap" Text="Status" VerticalAlignment="Top"/>
 		<Border BorderBrush="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" BorderThickness="1" Margin="5" VerticalAlignment="Top" Height="39" Width="250" Padding="3" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3">
@@ -58,15 +58,15 @@
 		<Border BorderBrush="{DynamicResource {x:Static SystemColors.InfoTextBrushKey}}" BorderThickness="1" Margin="5" VerticalAlignment="Top" Height="39" Width="250" Padding="3" Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="3">
 			<TextBlock x:Name="textBlockSubStatus" TextWrapping="Wrap" Background="{DynamicResource {x:Static SystemColors.InfoBrushKey}}"/>
 		</Border>
-		<Button x:Name="buttonRead" Content="Read data from the card" HorizontalAlignment="Center" VerticalAlignment="Center" Width="154" Click="buttonRead_Click" Grid.Row="3" Margin="6,13"/>
+		<Button x:Name="buttonRead" Content="Read data from the card" HorizontalAlignment="Center" VerticalAlignment="Center" Width="154" Click="ButtonRead_Click" Grid.Row="3" Margin="6,13"/>
 		<TextBox x:Name="textBoxHex" HorizontalAlignment="Left" Margin="0,5" TextWrapping="Wrap" VerticalAlignment="Top" Width="160" Height="36" FontFamily="Consolas" Grid.Row="3" Grid.Column="2"/>
 		<TextBox x:Name="textBoxText" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Width="160" Height="35" FontFamily="Consolas" Grid.Row="4" Grid.Column="2" Margin="0,5"/>
-		<Button x:Name="buttonCopy" Content="↓" HorizontalAlignment="Center" Margin="5" VerticalAlignment="Top" Width="20" Click="buttonCopy_Click" RenderTransformOrigin="0.5,2.6" Grid.Row="5" Grid.Column="2"/>
-		<Button x:Name="buttonWrite" Content="Write data to the card" HorizontalAlignment="Center" Margin="6,10" VerticalAlignment="Center" Width="154" Click="buttonWrite_Click" Grid.Row="6"/>
-		<ToggleButton x:Name="toggleHexData" Content="Hex" HorizontalAlignment="Left" VerticalAlignment="Center" Click="toggleHex_Click" RenderTransformOrigin="0.583,-6.7" Grid.Row="6" Grid.Column="1" Margin="5"/>
-		<TextBox x:Name="textBoxData" HorizontalAlignment="Left" Height="auto" TextWrapping="Wrap" VerticalAlignment="Center" Width="160" FontFamily="Consolas" TextChanged="textBoxData_TextChanged" RenderTransformOrigin="0.519,-4.688" Grid.Row="6" Grid.Column="2" />
-		<Button x:Name="buttonStoreKey" Content="Store Key" HorizontalAlignment="Center" Margin="6,10" VerticalAlignment="Center" Width="154" Click="buttonStoreKey_Click" Grid.Column="0" Grid.Row="7"/>
-		<ToggleButton x:Name="toggleHexKey" Content="Hex" HorizontalAlignment="Left" VerticalAlignment="Center" Click="toggleHex_Click" RenderTransformOrigin="0.833,2.35" Grid.Row="7" Grid.Column="1" Margin="5"/>
+		<Button x:Name="buttonCopy" Content="↓" HorizontalAlignment="Center" Margin="5" VerticalAlignment="Top" Width="20" Click="ButtonCopy_Click" RenderTransformOrigin="0.5,2.6" Grid.Row="5" Grid.Column="2"/>
+		<Button x:Name="buttonWrite" Content="Write data to the card" HorizontalAlignment="Center" Margin="6,10" VerticalAlignment="Center" Width="154" Click="ButtonWrite_Click" Grid.Row="6"/>
+		<ToggleButton x:Name="toggleHexData" Content="Hex" HorizontalAlignment="Left" VerticalAlignment="Center" Click="ToggleHex_Click" RenderTransformOrigin="0.583,-6.7" Grid.Row="6" Grid.Column="1" Margin="5"/>
+		<TextBox x:Name="textBoxData" HorizontalAlignment="Left" Height="auto" TextWrapping="Wrap" VerticalAlignment="Center" Width="160" FontFamily="Consolas" TextChanged="TextBoxData_TextChanged" RenderTransformOrigin="0.519,-4.688" Grid.Row="6" Grid.Column="2" />
+		<Button x:Name="buttonStoreKey" Content="Store Key" HorizontalAlignment="Center" Margin="6,10" VerticalAlignment="Center" Width="154" Click="ButtonStoreKey_Click" Grid.Column="0" Grid.Row="7"/>
+		<ToggleButton x:Name="toggleHexKey" Content="Hex" HorizontalAlignment="Left" VerticalAlignment="Center" Click="ToggleHex_Click" RenderTransformOrigin="0.833,2.35" Grid.Row="7" Grid.Column="1" Margin="5"/>
 		<TextBox x:Name="textBoxKey" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="120" FontFamily="Consolas" Grid.Row="7" Grid.Column="2" Margin="0,12"/>
 		<StatusBar Height="30" VerticalAlignment="Bottom" Width="Auto" HorizontalAlignment="Stretch" Grid.Column="0" Grid.Row="8" Grid.ColumnSpan="4" >
 			<StatusBarItem>
@@ -74,10 +74,10 @@
 			</StatusBarItem>
 			<Separator/>
 			<StatusBarItem>
-				<ToggleButton x:Name="toggleKeySlot1" Content="Key Slot 0" HorizontalAlignment="Right" Margin="6,0" VerticalAlignment="Top" MinWidth="65" Checked="toggleKeySlot1_Click" Click="toggleKeySlot1_Click" Grid.Row="8"/>
+				<ToggleButton x:Name="toggleKeySlot1" Content="Key Slot 0" HorizontalAlignment="Right" Margin="6,0" VerticalAlignment="Top" MinWidth="65" Checked="ToggleKeySlot1_Click" Click="ToggleKeySlot1_Click" Grid.Row="8"/>
 			</StatusBarItem>
 			<StatusBarItem>
-				<ToggleButton x:Name="toggleKeyTypeB" Content="Key Type A" HorizontalAlignment="Left" Margin="6,0" VerticalAlignment="Top" MinWidth="65"  Click="toggleKeyTypeB_Click" Background="#FFF5F0F0"/>
+				<ToggleButton x:Name="toggleKeyTypeB" Content="Key Type A" HorizontalAlignment="Left" Margin="6,0" VerticalAlignment="Top" MinWidth="65"  Click="ToggleKeyTypeB_Click" Background="#FFF5F0F0"/>
 			</StatusBarItem>
 			<Separator/>
 			<StatusBarItem>

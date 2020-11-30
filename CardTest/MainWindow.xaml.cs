@@ -16,7 +16,7 @@ namespace CardTest
         public int SendLen, RecvLen, nBytesRet, reqType, Aprotocol, dwProtocol, cbPciLength;
         public Winscard.SCARD_READERSTATE RdrState;
         public Winscard.SCARD_IO_REQUEST pioSendRequest;
-        private object lock1 = new object();
+        private readonly object lock1 = new object();
 
         public MainWindow()
         {
@@ -25,12 +25,12 @@ namespace CardTest
             this.DataContext = CardIo;
             BindingOperations.EnableCollectionSynchronization(CardIo.Devices, lock1);
             CardIo.ReaderStateChanged += CardIo_ReaderStateChanged;
-            connectCard1();
+            ConnectCard1();
         }
 
         public CardIo CardIo { get; set; }
 
-        private void buttonGetUid_Click(object sender, RoutedEventArgs e)
+        private void ButtonGetUid_Click(object sender, RoutedEventArgs e)
         {
             string cardUID = CardIo.GetCardUID();
             if (cardUID == null)
@@ -43,7 +43,7 @@ namespace CardTest
             }
         }
 
-        private bool connectCard1()
+        private bool ConnectCard1()
         {
             if (!CardIo.ConnectCard())
             {
@@ -102,7 +102,7 @@ namespace CardTest
 
 
         public byte[] DataRead { get ; set; }
-        public byte[] readBlock()
+        public byte[] ReadBlock()
         {
             var bytes = CardIo.ReadCardBlock(Block, KeyType, KeySlot);
             textBlockStatus.Text = CardIo.StatusText;
@@ -157,7 +157,7 @@ namespace CardTest
                 var text = textBox.Text;
                 if (text.Length < length)
                 {
-                    text = text + new string('\0', length - text.Length);
+                    text += new string('\0', length - text.Length);
                 }
                 else if (text.Length > length)
                 {
@@ -190,11 +190,11 @@ namespace CardTest
         }
 
 
-        private void buttonRead_Click(object sender, RoutedEventArgs e)
+        private void ButtonRead_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                verifyCard();
+                VerifyCard();
             }
             catch(Exception ex)
             {
@@ -202,26 +202,26 @@ namespace CardTest
             }
         }
 
-        public void verifyCard()
+        public void VerifyCard()
         {
-            if (connectCard1())
+            if (ConnectCard1())
             {
-                DataRead = readBlock() ?? new byte[0];
+                DataRead = ReadBlock() ?? new byte[0];
                 SetBytes(DataRead, TextFormat.Hex, textBoxHex);
                 SetBytes(DataRead, TextFormat.Stretched, textBoxText);
             }
         }
 
 
-        private void buttonWrite_Click(object sender, RoutedEventArgs e)
+        private void ButtonWrite_Click(object sender, RoutedEventArgs e)
         {
-            if (connectCard1())// establish connection to the card: you've declared this from previous post
+            if (ConnectCard1())// establish connection to the card: you've declared this from previous post
             {
-                writeBlock();
+                WriteBlock();
             }
         }
 
-        private void writeBlock()
+        private void WriteBlock()
         {
             CardIo.WriteCardBlock(Data, Block, KeyType, KeySlot);
             DisplayStatus();
@@ -231,19 +231,17 @@ namespace CardTest
         {
             textBlockStatus.Text = statusText ?? CardIo.StatusText;
             textBlockSubStatus.Text =
-                subStatusText != null
-                    ? subStatusText
-                    : statusText == null
+                subStatusText ?? (statusText == null
                         ? CardIo.SubStatusText
-                        : "";
+                        : "");
         }
 
-        private void buttonStoreKey_Click(object sender, RoutedEventArgs e)
+        private void ButtonStoreKey_Click(object sender, RoutedEventArgs e)
         {
-            storeKey();
+            StoreKey();
         }
 
-        private void storeKey()
+        private void StoreKey()
         {
             var k = Key;
             if (k == null)
@@ -254,7 +252,7 @@ namespace CardTest
         }
 
 
-        private void toggleHex_Click(object sender, RoutedEventArgs e)
+        private void ToggleHex_Click(object sender, RoutedEventArgs e)
         {
             var isKey = sender == this.toggleHexKey;
 
@@ -291,7 +289,7 @@ namespace CardTest
             }
         }
 
-        private void toggleKeyTypeB_Click(object sender, RoutedEventArgs e)
+        private void ToggleKeyTypeB_Click(object sender, RoutedEventArgs e)
         {
             toggleKeyTypeB.Content =
                 toggleKeyTypeB.IsChecked == true
@@ -299,7 +297,7 @@ namespace CardTest
                 : "Key Type A";
         }
 
-        private void textBoxData_TextChanged(object sender, TextChangedEventArgs e)
+        private void TextBoxData_TextChanged(object sender, TextChangedEventArgs e)
         {
 
         }
@@ -314,7 +312,7 @@ namespace CardTest
             textBlockReaderState.Text = readerState.ToString();
         }
 
-        private void toggleKeySlot1_Click(object sender, RoutedEventArgs e)
+        private void ToggleKeySlot1_Click(object sender, RoutedEventArgs e)
         {
             toggleKeySlot1.Content =
                 toggleKeySlot1.IsChecked == true
@@ -322,12 +320,12 @@ namespace CardTest
                 : "Key Slot 0";
         }
 
-        private void buttonCopy_Click(object sender, RoutedEventArgs e)
+        private void ButtonCopy_Click(object sender, RoutedEventArgs e)
         {
             Data = DataRead;
         }
 
-        private void buttonCheck_Click(object sender, RoutedEventArgs e)
+        private void ButtonCheck_Click(object sender, RoutedEventArgs e)
         {
 
         }
