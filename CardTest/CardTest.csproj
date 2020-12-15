@@ -95,9 +95,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\SnappyCard\SnappyCard.csproj">
+    <ProjectReference Include="..\SnappyWinscard\SnappyWinscard.csproj">
       <Project>{5381eff0-b033-4adf-b1ed-664acc4cf98e}</Project>
-      <Name>SnappyCard</Name>
+      <Name>SnappyWinscard</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

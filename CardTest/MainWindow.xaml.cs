@@ -1,4 +1,4 @@
-﻿using SnappyCard;
+﻿using SnappyWinscard;
 using System;
 using System.Globalization;
 using System.Linq;
