@@ -18,6 +18,8 @@
     <PackageReleaseNotes>Initial release</PackageReleaseNotes>
     <Version>1.0.0.1</Version>
     <Company>henvb</Company>
+    <AssemblyName>SnappyWinscard</AssemblyName>
+    <RootNamespace>SnappyWinscard</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

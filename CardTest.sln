@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CardTest", "CardTest\CardTest.csproj", "{1E4B58CA-EEFE-4481-8030-25076C76B666}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnappyCard", "SnappyCard\SnappyCard.csproj", "{5381EFF0-B033-4ADF-B1ED-664ACC4CF98E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnappyWinscard", "SnappyWinscard\SnappyWinscard.csproj", "{5381EFF0-B033-4ADF-B1ED-664ACC4CF98E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
