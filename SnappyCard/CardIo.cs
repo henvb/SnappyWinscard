@@ -17,6 +17,7 @@ namespace SnappyCard
         const int SwOk = 0x9000;
         const int SwUnknown = -1;
         const int SwNoContext = -2;
+        private ReaderState currentReaderState;
         private int hContext;
         private int hCard;
         private int Protocol;
@@ -29,6 +30,24 @@ namespace SnappyCard
 
             Task.Run(() => HandleCardStatus());
         }
+
+        public ReaderState CurrentReaderState
+        {
+            get
+            {
+                return currentReaderState;
+            }
+
+            set
+            {
+                if (currentReaderState == value)
+                    return;
+                currentReaderState = value;
+                ReaderStateChanged?.Invoke(value);
+                NotifyPropertyChanged();
+            }
+        }
+
         public List<string> ListReaders()
         {
             int ReaderCount = 0;
@@ -39,8 +58,6 @@ namespace SnappyCard
             retCode = Winscard.SCardListReaders(hContext, null, null, ref ReaderCount);
             if (retCode != Winscard.SCARD_S_SUCCESS)
             {
-                //MessageBox.Show(Card.GetScardErrMsg(retCode));
-                //connActive = false;
                 return null;
             }
 
@@ -50,7 +67,6 @@ namespace SnappyCard
             retCode = Winscard.SCardListReaders(hContext, null, ReadersList, ref ReaderCount);
             if (retCode != Winscard.SCARD_S_SUCCESS)
             {
-                //MessageBox.Show(Card.GetScardErrMsg(retCode));
                 return null;
             }
 
@@ -108,7 +124,6 @@ namespace SnappyCard
                     Initialize();
                     goto default;
                 default:
-                    //MessageBox.Show(StatusText, "Card not available", MessageBoxButton.OK, MessageBoxImage.Error);
                     return false;
             }
             return true;
@@ -211,7 +226,6 @@ namespace SnappyCard
                 throw new ArgumentException("Key must be 6 bytes long", nameof(key));
             var SendLen = 5 + keyLength;
             byte[] SendBuff = new byte[SendLen];
-            //ClearBuffers();
             SendBuff[0] = 0xFF;                             // CLA
             SendBuff[1] = 0x82;                             // INS
             SendBuff[2] = 0x00;                             // P1: Key Structure - to memory
@@ -223,14 +237,11 @@ namespace SnappyCard
             byte[] RecvBuff = new byte[RecvLen];
 
             SCardTransmit(SendBuff, RecvBuff, ref pioSendRequest, ref RecvLen);
-            //retCode = SendAPDUandDisplay(2);
         }
 
 
         public bool AuthenticateBlock(byte Block, byte KeyType, byte KeySlot)
         {
-            //ClearBuffers();
-
             byte[] SendBuff = new byte[] {
                 0xFF,        // CLA
                 0x86,        // INS: Authentication
@@ -304,7 +315,7 @@ namespace SnappyCard
             }
             return null;
         }
-        //submit data method
+
         public void WriteCardBlock(byte[] data, byte block, byte keyType, byte keySlot)
         {
 
@@ -365,7 +376,7 @@ namespace SnappyCard
                             {
                                 readerState = ReaderState.NoCard;
                             }
-                            ReaderStateChanged?.Invoke(readerState);
+                            CurrentReaderState = readerState;
                             CurrentState = rs[0].RdrEventState;
                         }
                         break;
