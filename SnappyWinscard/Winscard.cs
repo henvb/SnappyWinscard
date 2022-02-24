@@ -1,11 +1,14 @@
-﻿using System;
+﻿
+
+using System;
 using System.Runtime.InteropServices;
+
 
 namespace SnappyWinscard
 {
-    public class Winscard
+    public partial class Winscard
     {
-        #region Structs
+#region Structs
         [StructLayout(LayoutKind.Sequential)]
         public struct SCARD_IO_REQUEST
         {
@@ -32,16 +35,16 @@ namespace SnappyWinscard
         public struct SCARD_READERSTATE
         {
             public string RdrName;
-            public int UserData;
-            public int RdrCurrState;
-            public int RdrEventState;
+            public nint UserData;
+            public uint RdrCurrState;
+            public uint RdrEventState;
             public int ATRLength;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 37)]
             public byte[] ATRValue;
         }
-        #endregion
+#endregion
 
-        #region Memory cards
+#region Memory cards
 
         public const string READER_NAME_NEW = @"\\?PnP?\Notification";
         public const int CT_MCU = 0x00;                   // MCU
@@ -70,9 +73,9 @@ namespace SnappyWinscard
         public const int CT_MCUT1 = 0x17;                  // MCU T=1
         public const int CT_MCU_Auto = 0x18;               // MCU Autodetect
 
-        #endregion
+#endregion
 
-        #region Scope
+#region Scope
 
         /// <summary>
         /// Scope in user space
@@ -105,9 +108,9 @@ namespace SnappyWinscard
         ///database actions.)
         ///</remarks>
         public const int SCARD_SCOPE_SYSTEM = 2;
-        #endregion
+#endregion
 
-        #region State
+#region State
         /// <summary>
         /// App wants status
         /// </summary>
@@ -236,9 +239,9 @@ namespace SnappyWinscard
         ///is not available to other applications.
         /// </remarks>
         public const int SCARD_SHARE_DIRECT = 3;
-        #endregion
+#endregion
 
-        #region Disposition
+#region Disposition
 
         /// <summary>
         /// Do nothing on close
@@ -267,9 +270,9 @@ namespace SnappyWinscard
         /// <remarks>Eject the card on close
         /// </remarks>
         public const int SCARD_EJECT_CARD = 3;
-        #endregion
+#endregion
 
-        #region ACS IOCTL class
+#region ACS IOCTL class
         public const long FILE_DEVICE_SMARTCARD = 0x310000; // Reader action IOCTLs
 
         public const long IOCTL_SMARTCARD_DIRECT = FILE_DEVICE_SMARTCARD + 2050 * 4;
@@ -289,9 +292,9 @@ namespace SnappyWinscard
         public const long IOCTL_SMARTCARD_GET_READER_INFO = FILE_DEVICE_SMARTCARD + 2051 * 4;
         public const long IOCTL_SMARTCARD_SET_CARD_TYPE = FILE_DEVICE_SMARTCARD + 2060 * 4;
         public const long IOCTL_SMARTCARD_ACR128_ESCAPE_COMMAND = FILE_DEVICE_SMARTCARD + 2079 * 4;
-        #endregion
+#endregion
 
-        #region Return values
+#region Return values
         /// <summary>
         /// No error was encountered.
         /// </summary>
@@ -538,9 +541,9 @@ namespace SnappyWinscard
         /// </summary>
         public const uint SCARD_W_CARD_NOT_AUTHENTICATED = 0x8010006F;
 
-        #endregion
+#endregion
 
-        #region Protocol
+#region Protocol
         /// <summary>
         /// There is no active protocol.
         /// </summary>
@@ -560,9 +563,9 @@ namespace SnappyWinscard
         /// Raw is the active protocol.
         /// </summary>
         public const short SCARD_PROTOCOL_RAW = 0x0004;
-        #endregion
+#endregion
 
-        #region Reader state
+#region Reader state
         /// <summary>
         /// Unknown state
         /// </summary>
@@ -617,23 +620,23 @@ namespace SnappyWinscard
         ///communication protocols have been established.
         /// </remarks>
         public const int SCARD_SPECIFIC = 6;
-        #endregion
+#endregion
 
         /// <summary>
         /// Infinite timeout
         /// </summary>
         public const uint INFINITE = 0xFFFFFFFF;
 
-        #region Imported methods
+#region Imported methods
 
         [DllImport("winscard.dll")]
-        public static extern uint SCardEstablishContext(int dwScope, int pvReserved1, int pvReserved2, ref int phContext);
+        public static extern uint SCardEstablishContext(int dwScope, int pvReserved1, int pvReserved2, ref nint phContext);
 
         [DllImport("winscard.dll")]
         public static extern uint SCardReleaseContext(int phContext);
 
         [DllImport("winscard.dll")]
-        public static extern uint SCardConnect(int hContext, string szReaderName, int dwShareMode, int dwPrefProtocol, ref int phCard, ref int ActiveProtocol);
+        public static extern uint SCardConnect(nint hContext, string szReaderName, int dwShareMode, int dwPrefProtocol, ref nint phCard, ref nint ActiveProtocol);
 
         [DllImport("winscard.dll")]
         public static extern uint SCardBeginTransaction(int hCard);
@@ -646,10 +649,10 @@ namespace SnappyWinscard
 
         [DllImport("winscard.DLL", EntryPoint = "SCardListReadersA", CharSet = CharSet.Ansi)]
         public static extern uint SCardListReaders(
-            int hContext,
+            nint hContext,
             byte[] Groups,
             byte[] Readers,
-            ref int pcchReaders
+            ref nint pcchReaders
             );
 
 
@@ -663,26 +666,26 @@ namespace SnappyWinscard
         public static extern uint SCardState(int hCard, ref uint State, ref uint Protocol, ref byte ATR, ref uint ATRLen);
 
         [DllImport("WinScard.dll")]
-        public static extern uint SCardTransmit(IntPtr hCard,
+        public static extern uint SCardTransmitP(IntPtr hCard,
                                                ref SCARD_IO_REQUEST pioSendPci,
                                                ref byte[] pbSendBuffer,
                                                int cbSendLength,
                                                ref SCARD_IO_REQUEST pioRecvPci,
                                                ref byte[] pbRecvBuffer,
-                                               ref int pcbRecvLength);
+                                               ref nint pcbRecvLength);
 
         [DllImport("winscard.dll")]
-        public static extern uint SCardTransmit(int hCard, ref SCARD_IO_REQUEST pioSendRequest, ref byte SendBuff, int SendBuffLen, ref SCARD_IO_REQUEST pioRecvRequest, ref byte RecvBuff, ref int RecvBuffLen);
+        public static extern uint SCardTransmit(int hCard, ref SCARD_IO_REQUEST pioSendRequest, ref byte SendBuff, int SendBuffLen, ref SCARD_IO_REQUEST pioRecvRequest, ref byte RecvBuff, ref nint RecvBuffLen);
 
         [DllImport("winscard.dll")]
-        public static extern uint SCardTransmit(int hCard, ref SCARD_IO_REQUEST pioSendRequest, ref byte[] SendBuff, int SendBuffLen, ref SCARD_IO_REQUEST pioRecvRequest, ref byte[] RecvBuff, ref int RecvBuffLen);
+        public static extern uint SCardTransmit(nint hCard, ref SCARD_IO_REQUEST pioSendRequest, byte[] SendBuff, int SendBuffLen, ref SCARD_IO_REQUEST pioRecvRequest, byte[] RecvBuff, ref nint RecvBuffLen);
 
         [DllImport("winscard.dll")]
         public static extern uint SCardControl(int hCard, uint dwControlCode, ref byte SendBuff, int SendBuffLen, ref byte RecvBuff, int RecvBuffLen, ref int pcbBytesReturned);
 
         [DllImport("winscard.dll")]
-        public static extern uint SCardGetStatusChange(int hContext, uint TimeOut, [In, Out] SCARD_READERSTATE[] ReaderState, int ReaderCount);
-        #endregion
+        public static extern uint SCardGetStatusChange(nint hContext, uint TimeOut, [In, Out] SCARD_READERSTATE[] ReaderState, int ReaderCount);
+#endregion
         public static string GetScardErrMsg(uint ReturnCode)
         {
             switch (ReturnCode)

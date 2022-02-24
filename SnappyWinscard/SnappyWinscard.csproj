@@ -2,24 +2,28 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+	<IncludeBuildOutput>false</IncludeBuildOutput>
     <PackageId>SnappyWinscard</PackageId>
+	<LangVersion>latest</LangVersion>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
     <Authors>henvb</Authors>
     <Product>SnappyWinscard</Product>
     <Description>.NET interface for smart card readers like ACS ACR122U</Description>
-    <Copyright>Copyright © 2020 henvb</Copyright>
+    <Copyright>Copyright © 2022 henvb</Copyright>
     <PackageProjectUrl>https://github.com/henvb/SnappyWinscard</PackageProjectUrl>
     <RepositoryUrl>https://github.com/henvb/SnappyWinscard</RepositoryUrl>
     <PackageTags>csharp smartcard smartcard-reader winscard</PackageTags>
-    <AssemblyVersion>1.0.0.3</AssemblyVersion>
-    <FileVersion>1.0.0.3</FileVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageReleaseNotes>Initial release</PackageReleaseNotes>
-    <Version>1.0.0.3</Version>
+    <PackageReleaseNotes>64 bit support</PackageReleaseNotes>
+    <Version>1.0.1.0-beta.1</Version>
     <Company>henvb</Company>
     <AssemblyName>SnappyWinscard</AssemblyName>
     <RootNamespace>SnappyWinscard</RootNamespace>
+    <Platforms>x64;x86</Platforms>
+	<GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +31,12 @@
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+    <None Include="bin\x64\Debug\netstandard2.0\SnappyWinscard.dll" Pack="true" PackagePath="runtimes\win10-x64\SnappyWinscard.dll" />
+    <None Include="bin\x86\Debug\netstandard2.0\SnappyWinscard.dll" Pack="true" PackagePath="runtimes\win10-x86\SnappyWinscard.dll" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Remove="Winscard64.cs" Condition=" '$(Platform)' == 'x86' " />
+    <Compile Remove="Winscard32.cs" Condition=" '$(Platform)' == 'x64' " />
+  </ItemGroup>
 </Project>

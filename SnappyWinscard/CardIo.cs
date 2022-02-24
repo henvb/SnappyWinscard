@@ -4,22 +4,23 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace SnappyWinscard
 {
     public class CardIo : INotifyPropertyChanged
     {
-        int CurrentState;
+        uint CurrentState;
         private uint retCode;
         private int swInt;
         const int SwOk = 0x9000;
         const int SwUnknown = -1;
         const int SwNoContext = -2;
         private ReaderState currentReaderState;
-        private int hContext;
-        private int hCard;
-        private int Protocol;
+        private nint hContext;
+        private nint hCard;
+        private nint Protocol;
         Winscard.SCARD_IO_REQUEST pioSendRequest;
         private string currentDevice;
 
@@ -49,7 +50,7 @@ namespace SnappyWinscard
 
         public List<string> ListReaders()
         {
-            int ReaderCount = 0;
+            nint ReaderCount = 0;
             List<string> availableReaderList = new List<string>();
 
             //Make sure a context has been established before 
@@ -178,7 +179,7 @@ namespace SnappyWinscard
                     cbPciLength = System.Runtime.InteropServices.Marshal.SizeOf(typeof(Winscard.SCARD_IO_REQUEST))
                 };
                 byte[] sendBytes = new byte[] { 0xFF, 0xCA, 0x00, 0x00, 0x00 }; //get UID command      for Mifare cards
-                int outBytes = receivedUID.Length;
+                nint outBytes = receivedUID.Length;
                 if (SCardTransmit(sendBytes, receivedUID, ref request, ref outBytes))
                 {
                     cardUID = receivedUID
@@ -232,7 +233,7 @@ namespace SnappyWinscard
             SendBuff[4] = keyLength;                             // Lc: Data length
             key.CopyTo(SendBuff, 5);
 
-            var RecvLen = 2;
+            nint RecvLen = 2;
             byte[] RecvBuff = new byte[RecvLen];
 
             SCardTransmit(SendBuff, RecvBuff, ref pioSendRequest, ref RecvLen);
@@ -257,16 +258,16 @@ namespace SnappyWinscard
 
             byte[] RecvBuff = new byte[2];
 
-            int RecvLen = RecvBuff.Length;
+            nint RecvLen = RecvBuff.Length;
 
             return SCardTransmit(SendBuff, RecvBuff, ref pioSendRequest, ref RecvLen);
         }
 
-        private bool SCardTransmit(byte[] SendBuff, byte[] RecvBuff, ref Winscard.SCARD_IO_REQUEST pioSendRequest, ref int RecvLen)
+        private bool SCardTransmit(byte[] SendBuff, byte[] RecvBuff, ref Winscard.SCARD_IO_REQUEST pioSendRequest, ref nint RecvLen)
         {
-            retCode = Winscard.SCardTransmit(hCard, ref pioSendRequest, ref SendBuff[0],
-                                 SendBuff.Length, ref pioSendRequest, ref RecvBuff[0], ref RecvLen);
-            ReadSw(RecvBuff, RecvLen - 2);
+            retCode = Winscard.SCardTransmit(hCard, ref pioSendRequest, SendBuff,
+                                 SendBuff.Length, ref pioSendRequest, RecvBuff, ref RecvLen);
+            ReadSw(RecvBuff, (int)(RecvLen - 2));
             return retCode == Winscard.SCARD_S_SUCCESS;
         }
 
@@ -301,7 +302,7 @@ namespace SnappyWinscard
             SendBuff[3] = block;// P2 : Block No.
             SendBuff[4] = blockSize;// Le
 
-            var RecvLen = blockSize + 2;
+            nint RecvLen = blockSize + 2;
             byte[] RecvBuff = new byte[RecvLen];
 
 
@@ -309,7 +310,7 @@ namespace SnappyWinscard
             {
                 if (swInt == SwOk)
                 {
-                    return RecvBuff.Take(RecvLen - 2).ToArray();
+                    return RecvBuff.Take((int)(RecvLen - 2)).ToArray();
                 }
             }
             return null;
@@ -332,7 +333,7 @@ namespace SnappyWinscard
 
                 data.CopyTo(SendBuff, 5);
 
-                var RecvLen = 0x02;
+                nint RecvLen = 0x02;
                 byte[] RecvBuff = new byte[RecvLen];
                 SCardTransmit(SendBuff, RecvBuff, ref pioSendRequest, ref RecvLen);
             }
