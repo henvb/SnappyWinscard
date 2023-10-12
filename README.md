@@ -4,11 +4,12 @@ SnappyWinscard is a .NET interface for smart card readers like ACS ACR122U.
 
 ## Version History
 
+### 1.0.1.0
+Now also supports 64bit. Currently in beta state.
+
 ### 1.0.0.3
 Initial NuGet package, 32bit only.
 
-### 1.0.1.0
-Now also supports 64bit. Currently in beta state.
 
 ## NuGet
 You can get the NuGet package [here](https://www.nuget.org/packages/SnappyWinscard/).
