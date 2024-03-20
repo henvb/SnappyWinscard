@@ -167,7 +167,7 @@ namespace SnappyWinscard
         }
 
 
-        public string GetCardUID()//only for mifare 1k cards
+        public string GetCardUID(int cardUidLength = 8) //only for mifare 1k cards
         {
             if (ConnectCard())
             {
@@ -182,8 +182,9 @@ namespace SnappyWinscard
                 nint outBytes = receivedUID.Length;
                 if (SCardTransmit(sendBytes, receivedUID, ref request, ref outBytes))
                 {
+                    var cardUidByteSize = cardUidLength / 2;
                     cardUID = receivedUID
-                        .Take(4)
+                        .Take(cardUidByteSize)
                         .Aggregate(
                             "",
                             (a, b)
